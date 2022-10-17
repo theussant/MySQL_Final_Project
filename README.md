@@ -1,2 +1,2 @@
-# MySQL-_Final_Project
+# MySQL_Final_Project
 Final Project
