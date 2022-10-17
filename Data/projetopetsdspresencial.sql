@@ -7,6 +7,7 @@ use petshopds;
 # Criação da tabela funcionário.
 create table tb_funcionario(
 id_func int auto_increment primary key not null,
+nome_social_func varchar(40) not null,
 nome_func varchar(40) not null,
 endereco_func varchar (50) not null,
 salario real not null,
@@ -14,28 +15,30 @@ cargo varchar (20) not null,
 dt_admissao date not null,
 dt_nasc_func date not null,
 genero_func enum ('Masculino', 'Feminino', 'Outro'), 
-telefone_func varchar (20) not null,
+contato_func varchar (20) not null,
+email_func varchar(40) not null,
 plano_saude varchar (15) not null
 );
 
 # Criação da tabela cliente.
 create table tb_cliente (
 id_cliente int auto_increment primary key not null,
+nome_social_cliente varchar(40) not null,
 nome_cliente varchar(40) not null,
+email_cliente varchar(40) not null,
 endereco_cliente varchar (50) not null,
 dt_nasc_cliente date not null,
 genero_cliente enum ('Masculino', 'Feminino', 'Outro'), 
-telefone_cliente varchar (20) not null
+contato_cliente varchar (20) not null
 );
 
 # Criação da tabela fornecedor.
 create table tb_fornecedor(
-id_fornec int auto_increment primary key not null,
-nome_fornec varchar(40) not null,
-endereco_fornec varchar (50) not null,
-dt_nasc_fornec date not null,
-cnpj_fornec varchar (20) unique not null,
-telefone_fornec varchar (20) not null
+cnpj_fornec varchar(20) primary key not null,
+nome_fantasia varchar(40) not null,
+email_fornec varchar (30) not null,
+contato_fornec varchar (20) not null,
+endereco_fornec varchar (50) not null
 );
 
 # Criação da tabela animal.
@@ -51,6 +54,41 @@ genero_animal varchar(20) not null,
 
 id_cliente int not null,
 foreign key (id_cliente) references tb_cliente (id_cliente)
+);
+
+# Criação da tabela produto.
+create table tb_produto(
+cod_produto int primary key not null,
+nome_produto varchar (30) not null,
+valor_custo real not null,
+valor_venda real not null,
+marca_produto varchar (30) not null,
+funcionalidade varchar (30) not null,
+dt_fabricacao date not null,
+dt_validade date not null,
+estoque int not null default 0,
+qtd_minima int not null,
+qtd_estocada int not null,
+
+cnpj_fornec int not null,
+foreign key (cnpj_fornec) references tb_fornecedor (cnpj_fornec)
+);
+
+# Criação da tabela serviço.
+create table tb_servico(
+id_servico int auto_increment primary key not null,
+nome_servico varchar (30) not null,
+tipo_servico varchar (20) not null,
+valor_servico real not null,
+DtHrServico datetime,
+
+id_animal int not null,
+id_cliente int not null,
+id_func int not null,
+
+foreign key (id_animal) references tb_animal (id_animal),
+foreign key (id_cliente) references tb_cliente (id_cliente),
+foreign key (id_func) references tb_funcionario (id_func)
 );
 
 # Criação da tabela venda.
@@ -75,39 +113,6 @@ produtos varchar(3),
 
 id_venda int not null,
 foreign key (id_venda) references tb_venda (id_venda)
-);
-
-# Criação da tabela produto.
-create table tb_produto(
-id_produto int auto_increment primary key not null,
-nome_produto varchar (30) not null,
-valor_produto real not null,
-marca_produto varchar (30) not null,
-funcionalidade varchar (30) not null,
-dt_fabricacao date not null,
-dt_validade date not null,
-estoque int not null default 0,
-
-id_fornec int not null,
-cod_barra int not null,
-foreign key (id_fornec) references tb_fornecedor (id_fornec),
-foreign key (cod_barra) references tb_itens_venda (cod_barra)
-);
-
-# Criação da tabela serviço.
-create table tb_servico(
-id_servico int auto_increment primary key not null,
-nome_servico varchar (30) not null,
-tipo_servico varchar (20) not null,
-valor_servico real not null,
-
-id_animal int not null,
-id_cliente int not null,
-id_func int not null,
-
-foreign key (id_animal) references tb_animal (id_animal),
-foreign key (id_cliente) references tb_cliente (id_cliente),
-foreign key (id_func) references tb_funcionario (id_func)
 );
 
 # Inserção de dados funcionário.
@@ -143,13 +148,13 @@ insert into tb_animal (nome_animal, raca, tipo_animal, porte, castrado, idade_an
 ("Luffy", "Papagaio", "Ave", 'Médio', 'Não', 2, "Macho", 5),
 ("Dora", "Labrador", "Cachorro", 'Médio', 'Sim', 1, "Fêmea", 2);
 
-# Inserção de dados venda.
-insert into tb_venda (dt_venda, hr_venda, desconto, total, id_func) values 
-('2022-08-08', '2022-08-08 15:20:37', 0, 80.00, 1),
-('2022-08-08', '2022-08-08 17:45:11', 0, 50.00, 2),
-('2022-08-11', '2022-08-11 08:30:43', 10, 100.00, 4),
-('2022-08-12', '2022-08-12 10:00:25', 20, 160.00, 4),
-('2022-08-13', '2022-08-13 15:20:37', 28, 150.00, 5);
+# Inserção de dados serviços.
+insert into tb_servico (nome_servico, tipo_servico, valor_servico, id_animal , id_cliente , id_func) values
+("Banho", "Higiene", 80.00, 1, 1, 1),
+("Tosa", "Higiene", 70.00, 2, 2, 2),
+("Tosa", "Higiene", 70.00, 3, 3, 3),
+("Medicação", "Saúde", 85.00, 4, 4, 4),
+("Exames", "Saúde", 150.00, 5, 5, 5);
 
 # Inserção de dados produtos.
 insert into tb_produto (nome_produto, valor_produto, marca_produto, funcionalidade, dt_fabricacao, dt_validade, estoque, id_fornec, cod_barra) values
@@ -159,13 +164,13 @@ insert into tb_produto (nome_produto, valor_produto, marca_produto, funcionalida
 ("Areia Granulada", 40.00, "Pipicat", "Necessidade", "2022-05-10", "2024-07-17", 5, 4, 4),
 ("Caixa de Areia", 150.00, "Furacão Pet", "Necessidade", "2020-08-20", "2035-04-04", 8, 5, 5);
 
-# Inserção de dados serviços.
-insert into tb_servico (nome_servico, tipo_servico, valor_servico, id_animal , id_cliente , id_func) values
-("Banho", "Higiene", 80.00, 1, 1, 1),
-("Tosa", "Higiene", 70.00, 2, 2, 2),
-("Tosa", "Higiene", 70.00, 3, 3, 3),
-("Medicação", "Saúde", 85.00, 4, 4, 4),
-("Exames", "Saúde", 150.00, 5, 5, 5);
+# Inserção de dados venda.
+insert into tb_venda (dt_venda, hr_venda, desconto, total, id_func) values 
+('2022-08-08', '2022-08-08 15:20:37', 0, 80.00, 1),
+('2022-08-08', '2022-08-08 17:45:11', 0, 50.00, 2),
+('2022-08-11', '2022-08-11 08:30:43', 10, 100.00, 4),
+('2022-08-12', '2022-08-12 10:00:25', 20, 160.00, 4),
+('2022-08-13', '2022-08-13 15:20:37', 28, 150.00, 5);
 
 # Inserção de dados itens da venda.
 insert into tb_itens_venda (qtd_vendida, subtotal, venda, produtos, id_venda) values
