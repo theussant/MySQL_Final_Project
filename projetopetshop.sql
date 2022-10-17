@@ -166,6 +166,14 @@ insert into tb_servico (nome_servico, tipo_servico, valor_servico, id_animal , i
 ("Medicação", "Saúde", 85.00, 4, 4, 4),
 ("Exames", "Saúde", 150.00, 5, 5, 5);
 
+# Inserção de dados itens da venda.
+insert into tb_itens_venda (qtd_vendida, subtotal, produtos, id_venda) values
+(4, 80.00, 1, 1),
+(1, 50.00, 2, 2),
+(5, 90.00, 3, 3),
+(2, 128.00, 4, 4),
+(1, 108.00, 5, 5);
+
 # Drops para as tabelas.
 SET foreign_key_checks = 0;
 drop table tb_fornecedor;
@@ -188,14 +196,19 @@ select * from tb_produto;
 select * from tb_fornecedor;
 
 # Consultas.
+
+# Consultas para mostrar nome dos funcionários em ordem.
 select * from tb_funcionario order by nome_func asc;
 select * from tb_funcionario order by nome_func desc;
 
+# Consultas para mostrar nome dos animais em ordem.
 select * from tb_animal order by nome_animal asc;
 select * from tb_animal order by nome_animal desc;
 
+# Consulta para contar os gêneros dos animais.
 select genero_animal, count(genero_animal) as total from tb_animal group by tb_animal.genero_animal order by total;
 
+# Consulta para contar quantos clientes tem por bairro.
 select endereco_cliente, count(endereco_cliente) as total from tb_cliente group by tb_cliente.endereco_cliente order by total asc;
 
 select id_cliente, count(id_cliente) as total from tb_animal group by tb_animal.id_cliente order by total asc;
@@ -211,32 +224,54 @@ select nome_produto, count(nome_produto) as total from tb_produto group by tb_pr
 select plano_saude, count(*) as total from tb_funcionario group by plano_saude having count(*) > 1 order by total desc;
 
 # Triggers.
-DELIMITER $
-create trigger Tgr_ItensVenda_Insert after insert
-on tb_itens_venda
-for each row
-begin
-	update tb_produto set estoque = estoque - new.qtd_vendida
-where id_produto = new.produtos;
-end$
 
-create trigger Tgr_ItensVenda_Delete after delete
-on tb_itens_venda
-for each row
+# Procedures.
+DELIMITER $$
+create procedure pesquisar_funcionario(in idbusca int)
 begin
-	update tb_produto set estoque = estoque + old.qtd_vendida
-where id_produto = old.produtos;
-end$
-
+select nome_func, endereco_func, salario
+from tb_funcionario
+where id_func = idbusca;
+end $$
 DELIMITER ;
 
-# Inserção de dados itens da venda.
-insert into tb_itens_venda (qtd_vendida, subtotal, produtos, id_venda) values
-(4, 80.00, 1, 1),
-(1, 50.00, 2, 2),
-(5, 90.00, 3, 3),
-(2, 128.00, 4, 4),
-(1, 108.00, 5, 5);
+DELIMITER $$
+create procedure pesquisar_cliente(in idbusca int)
+begin
+select nome_cliente, endereco_cliente, telefone_cliente
+from tb_cliente
+where id_cliente = idbusca;
+end $$
+DELIMITER ;
 
-# Deletando um item dos itens venda.
-delete from tb_itens_venda where cod_barra=1 and qtd_vendida = 4 and produtos = "1";
+DELIMITER $$
+create procedure pesquisar_animal(in idbusca int)
+begin
+select nome_animal, tipo_animal, raca, id_cliente
+from tb_animal
+where id_animal = idbusca;
+end $$
+DELIMITER ;
+
+DELIMITER $$
+create procedure selecionar_produto(in quantidade int)
+begin
+select *from tb_produto
+limit quantidade;
+end $$
+DELIMITER ;
+ 
+DELIMITER $$
+create procedure verificar_qtd_produto(out quantidade int)
+begin
+select count(*) into quantidade from tb_produto;
+end $$
+DELIMITER ;
+
+# Calls.
+call pesquisar_animal(2);
+call pesquisar_cliente(2);
+call pesquisar_funcionario(3);
+call selecionar_produto(3);
+call verificar_qtd_produto(@total);
+select @total;
