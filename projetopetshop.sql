@@ -70,6 +70,7 @@ create table tb_itens_venda(
 cod_barra int auto_increment primary key not null,
 qtd_vendida int not null,
 subtotal real not null,
+produtos varchar(3),
 
 id_venda int not null,
 foreign key (id_venda) references tb_venda (id_venda)
@@ -84,6 +85,7 @@ marca_produto varchar (30) not null,
 funcionalidade varchar (30) not null,
 dt_fabricacao date not null,
 dt_validade date not null,
+estoque int not null default 0,
 
 id_fornec int not null,
 cod_barra int not null,
@@ -106,16 +108,6 @@ foreign key (id_animal) references tb_animal (id_animal),
 foreign key (id_cliente) references tb_cliente (id_cliente),
 foreign key (id_func) references tb_funcionario (id_func)
 );
-
-# Selects para verificação das criações das tabelas.
-select * from tb_funcionario;
-select * from tb_cliente;
-select * from tb_animal;
-select * from tb_venda;
-select * from tb_itens_venda;
-select * from tb_servico;
-select * from tb_produto;
-select * from tb_fornecedor;
 
 # Inserção de dados funcionário.
 insert into tb_funcionario (nome_func, endereco_func, salario, cargo, dt_admissao, dt_nasc_func, genero_func, telefone_func, plano_saude) values
@@ -158,21 +150,13 @@ insert into tb_venda (dt_venda, hr_venda, desconto, total, id_func) values
 ('2022-08-12', '2022-08-12 10:00:25', 20, 160.00, 4),
 ('2022-08-13', '2022-08-13 15:20:37', 28, 150.00, 5);
 
-# Inserção de dados itens da venda.
-insert into tb_itens_venda (qtd_vendida, subtotal, id_venda) values
-(4, 80.00, 1),
-(1, 50.00, 2),
-(5, 90.00, 3),
-(2, 128.00, 4),
-(1, 108.00, 5);
-
 # Inserção de dados produtos.
-insert into tb_produto (nome_produto, valor_produto, marca_produto, funcionalidade, dt_fabricacao, dt_validade, id_fornec, cod_barra) values
-("Ração", 20.00, "Golden", "Alimentação", "2022-05-10", "2024-04-04", 1, 1),
-("Coleira", 50.00, "Chalesco", "Passeio", "2020-04-10", "2032-05-13", 2, 2),
-("Ração", 20.00, "PremieR", "Alimentação", "2022-05-10", "2024-06-15", 3, 3),
-("Areia Granulada", 40.00, "Pipicat", "Necessidade", "2022-05-10", "2024-07-17", 4, 4),
-("Caixa de Areia", 150.00, "Furacão Pet", "Necessidade", "2020-08-20", "2035-04-04", 5, 5);
+insert into tb_produto (nome_produto, valor_produto, marca_produto, funcionalidade, dt_fabricacao, dt_validade, estoque, id_fornec, cod_barra) values
+("Ração", 20.00, "Golden", "Alimentação", "2022-05-10", "2024-04-04", 20, 1, 1),
+("Coleira", 50.00, "Chalesco", "Passeio", "2020-04-10", "2032-05-13", 10, 2, 2),
+("Ração", 20.00, "PremieR", "Alimentação", "2022-05-10", "2024-06-15", 30, 3, 3),
+("Areia Granulada", 40.00, "Pipicat", "Necessidade", "2022-05-10", "2024-07-17", 5, 4, 4),
+("Caixa de Areia", 150.00, "Furacão Pet", "Necessidade", "2020-08-20", "2035-04-04", 8, 5, 5);
 
 # Inserção de dados serviços.
 insert into tb_servico (nome_servico, tipo_servico, valor_servico, id_animal , id_cliente , id_func) values
@@ -192,6 +176,16 @@ drop table tb_cliente;
 drop table tb_funcionario;
 drop table tb_venda;
 drop table tb_itens_venda;
+
+# Selects para verificação das criações das tabelas.
+select * from tb_funcionario;
+select * from tb_cliente;
+select * from tb_animal;
+select * from tb_venda;
+select * from tb_itens_venda;
+select * from tb_servico;
+select * from tb_produto;
+select * from tb_fornecedor;
 
 # Consultas.
 select * from tb_funcionario order by nome_func asc;
@@ -215,3 +209,34 @@ select nome_produto, count(nome_produto) as total from tb_produto group by tb_pr
 select nome_produto, count(nome_produto) as total from tb_produto group by tb_produto.nome_produto order by total desc;
 
 select plano_saude, count(*) as total from tb_funcionario group by plano_saude having count(*) > 1 order by total desc;
+
+# Triggers.
+DELIMITER $
+create trigger Tgr_ItensVenda_Insert after insert
+on tb_itens_venda
+for each row
+begin
+	update tb_produto set estoque = estoque - new.qtd_vendida
+where id_produto = new.produtos;
+end$
+
+create trigger Tgr_ItensVenda_Delete after delete
+on tb_itens_venda
+for each row
+begin
+	update tb_produto set estoque = estoque + old.qtd_vendida
+where id_produto = old.produtos;
+end$
+
+DELIMITER ;
+
+# Inserção de dados itens da venda.
+insert into tb_itens_venda (qtd_vendida, subtotal, produtos, id_venda) values
+(4, 80.00, 1, 1),
+(1, 50.00, 2, 2),
+(5, 90.00, 3, 3),
+(2, 128.00, 4, 4),
+(1, 108.00, 5, 5);
+
+# Deletando um item dos itens venda.
+delete from tb_itens_venda where cod_barra=1 and qtd_vendida = 4 and produtos = "1";
