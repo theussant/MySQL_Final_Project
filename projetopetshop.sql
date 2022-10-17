@@ -70,6 +70,7 @@ create table tb_itens_venda(
 cod_barra int auto_increment primary key not null,
 qtd_vendida int not null,
 subtotal real not null,
+venda int,
 produtos varchar(3),
 
 id_venda int not null,
@@ -167,12 +168,12 @@ insert into tb_servico (nome_servico, tipo_servico, valor_servico, id_animal , i
 ("Exames", "Saúde", 150.00, 5, 5, 5);
 
 # Inserção de dados itens da venda.
-insert into tb_itens_venda (qtd_vendida, subtotal, produtos, id_venda) values
-(4, 80.00, 1, 1),
-(1, 50.00, 2, 2),
-(5, 90.00, 3, 3),
-(2, 128.00, 4, 4),
-(1, 108.00, 5, 5);
+insert into tb_itens_venda (qtd_vendida, subtotal, venda, produtos, id_venda) values
+(4, 80.00, 2, 1, 1),
+(1, 50.00, 3, 2, 2),
+(5, 90.00, 1, 3, 3),
+(2, 128.00, 2, 4, 4),
+(1, 108.00, 3, 5, 5);
 
 # Drops para as tabelas.
 SET foreign_key_checks = 0;
@@ -224,6 +225,26 @@ select nome_produto, count(nome_produto) as total from tb_produto group by tb_pr
 select plano_saude, count(*) as total from tb_funcionario group by plano_saude having count(*) > 1 order by total desc;
 
 # Triggers.
+DELIMITER $$
+create trigger tgr_itens_venda_insert after insert
+on tb_itens_venda
+for each row
+begin
+	update tb_produto set estoque = estoque - new.qtd_vendida
+where id_produto = new.produtos;
+end$
+
+create trigger tgr_itens_venda_delete after delete
+on tb_itens_venda
+for each row
+begin
+	update tb_produto set estoque = estoque + old.qtd_vendida
+where id_produto = old.produtos;
+end$
+DELIMITER ;
+
+create view total_venda as select nome_produto, valor_produto, qtd_vendida, qtd_vendida * valor_produto as total from tb_produto, tb_itens_venda where tb_produto.id_produto = tb_itens_venda.produtos;
+select * from total_venda;
 
 # Procedures.
 DELIMITER $$
