@@ -172,3 +172,59 @@ select * from tb_servico;
 select * from tb_produto;
 select * from tb_venda;
 select * from tb_itens_venda;
+
+# Drops para as tabelas.
+SET foreign_key_checks = 0;
+drop table tb_fornecedor;
+drop table tb_animal;
+drop table tb_servico;
+drop table tb_produto;
+drop table tb_cliente;
+drop table tb_funcionario;
+drop table tb_venda;
+drop table tb_itens_venda;
+
+# Consultas.
+
+# Consulta para mostrar nome dos funcionários em ordem.
+select * from tb_funcionario order by nome_func asc;
+
+# Consulta para mostrar os salários dos funcionários em ordem.
+select * from tb_funcionario order by salario desc;
+
+# Consulta para mostrar nome dos animais em ordem.
+select * from tb_animal order by nome_animal asc;
+
+# Consulta para contar os gêneros dos animais.
+select genero_animal, count(genero_animal) as total from tb_animal
+group by tb_animal.genero_animal order by total;
+
+# Consulta para contar quantos clientes tem por bairro.
+select endereco_cliente, count(endereco_cliente) as total from tb_cliente 
+group by tb_cliente.endereco_cliente order by total asc;
+
+# Consulta para contar quantos animais tem cada cliente.
+select id_cliente, count(id_cliente) as total from tb_animal 
+group by tb_animal.id_cliente order by total asc;
+
+# Consulta para contar as idades dos animais.
+select idade_animal, count(*) as total from tb_animal 
+group by idade_animal having count(*) > 0 order by total desc;
+
+# Consulta para mostrar os animais de um determinado cliente.
+select * from tb_animal where id_cliente = 4;
+
+# Consulta para contar quantos produtos tem de cada tipo/nome.
+select nome_produto, count(nome_produto) as total from tb_produto 
+group by tb_produto.nome_produto order by total asc;
+
+# Consulta para contar os planos de saúde dos funcionários.
+select plano_saude, count(*) as total from tb_funcionario 
+group by plano_saude having count(*) > 0 order by total desc;
+
+# Inner Joins
+
+# Inner join para relacionar os Clientes com seus animais.
+select tb_cliente.nome_cliente, tb_animal.nome_animal
+from tb_cliente
+inner join tb_animal on tb_cliente.id_cliente = tb_animal.id_cliente;
