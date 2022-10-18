@@ -1,8 +1,8 @@
 # Criação do banco de dados.
-create database petshopds;
+create database petshopdsremake;
 
 # Usando o banco de dados.
-use petshopds;
+use petshopdsremake;
 
 # Criação da tabela funcionário.
 create table tb_funcionario(
@@ -137,15 +137,16 @@ insert into tb_fornecedor (cnpj_fornec, nome_fantasia, email_fornec, contato_for
 ("53443421154511", "GoldenPets", "goldenpetsltda@gmail.com", "7175412896", "Barris");
 
 # Inserção de dados animal.
-insert into tb_animal (id_animal, nome_animal, raca, tipo_animal, porte, castrado, idade_animal, genero_animal, id_cliente) values
+insert into tb_animal (nome_animal, raca, tipo_animal, porte, castrado, idade_animal, genero_animal, id_cliente) values
 ("Scooby", "Dogue Alemão", "Cachorro", "Grande", "Sim", 5, "Macho", 1),
 ("Bidu", "Schnauzer", "Cachorro", "Pequeno", "Sim", 2, "Macho", 2),
 ("Pluto", "Bloodhound", "Cachorro", "Grande", "Não", 4, "Macho", 3),
 ("Mingau", "Angoá", "Gato", "Pequeno", "Sim", 3, "Macho", 4),
+("Lore", "Persa", "Gato", "Pequeno", "Não", 1, "Femea", 4),
 ("Luffy", "Papagaio", "Ave", "Médio", "Não", 7, "Macho", 5);
 
 #Inserção de dados serviço.
-insert into tb_servico (id_servico, tipo_servico, nome_servico, valor_servico, DtHrServico, id_animal, id_client, id_func) values
+insert into tb_servico (tipo_servico, nome_servico, valor_servico, DtHrServico, id_animal, id_cliente, id_func) values
 ("Higiene", "Banho", 80.00, '2022-10-10 15:00:30', 1, 1, 3),
 ("Higiene", "Tosa", 70.00, '2022-10-15 16:35:27', 2, 2, 1),
 ("Higiene", "Banho", 80.00, '2022-10-16 17:22:10', 3, 3, 2),
@@ -154,12 +155,12 @@ insert into tb_servico (id_servico, tipo_servico, nome_servico, valor_servico, D
 
 
 # Inserção de dados produto.
-insert into tb_produto (cod_produto, valor_custo, valor_venda, marca_produto, funcionalidade, dt_fabricacao, dt_validade, qtd_minima, qtd_estoque) values
-(1, 50.00, 50, "Golden", "Alimentação", '2021-06-12', '2022-07-13', 50, 60),
-(2, 40.00, 30, "Friskies", "Alimentação", '2021-07-08', '2022-09-09', 50, 80),
-(3, 80.00, 20, "Furacão Pet", "Higiene", '2019-05-10', '2040-06-15', 20, 40),
-(4, 120.00, 20, "DuraPets", "Higiente", '2019-06-12', '2030-05-20', 20, 30),
-(5, 60.00, 20, "Clube Pet D&G", "Passeio", '2020-08-10', '2025-05-17', 10, 20);
+insert into tb_produto (cod_produto, nome_produto, valor_custo, valor_venda, marca_produto, funcionalidade, dt_fabricacao, dt_validade, qtd_minima, qtd_estocada, cnpj_fornec) values
+(1, "Ração", 50.00, 50, "Golden", "Alimentação", '2021-06-12', '2022-07-13', 50, 60, "52345476216363"),
+(2, "Ração", 40.00, 30, "Friskies", "Alimentação", '2021-07-08', '2022-09-09', 50, 80, "94382830713978"),
+(3, "Shampoo", 80.00, 20, "Furacão Pet", "Higiene", '2019-05-10', '2040-06-15', 20, 40, "22355115543323"),
+(4, "Perfume", 120.00, 20, "DuraPets", "Higiente", '2019-06-12', '2030-05-20', 20, 30, "53443421154511"),
+(5, "Coleira", 60.00, 20, "Clube Pet D&G", "Passeio", '2020-08-10', '2025-05-17', 10, 20, "98839923405422");
 
 
 # Selects para verificação das criações das tabelas.
@@ -171,6 +172,3 @@ select * from tb_servico;
 select * from tb_produto;
 select * from tb_venda;
 select * from tb_itens_venda;
-
-
-
