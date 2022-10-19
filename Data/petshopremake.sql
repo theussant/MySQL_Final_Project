@@ -106,10 +106,8 @@ create table tb_itens_venda(
 id_itens_venda int auto_increment primary key not null,
 qtd_vendida int not null,
 
-cod_venda int not null,
 cod_produto int not null,
-foreign key (cod_produto) references tb_produto (cod_produto),
-foreign key (cod_venda) references tb_venda (cod_venda)
+foreign key (cod_produto) references tb_produto (cod_produto)
 );
 
 # Inserção de dados funcionário.
@@ -117,8 +115,8 @@ insert into tb_funcionario (nome_social_func, nome_func,  endereco_func, salario
 ("João", "João Ferreira", "Mussurunga", 3000.00, "Atendente", '2022-10-10', '1999-04-12', 'Masculino', "71988147925", "joaof2000@gmail.com", "Hapvida"),
 ("Lukinhas", "Lucas Silva", "Brotas", 2500.00, "Atendente", '2018-04-02', '2000-01-01', 'Masculino', "71932485967", "lukezeras@gmail.com", "Promédica"),
 ("Lari", "Larissa Vieira", "Imbuí", 2500.00, "Atendente", '2019-08-08', '2000-06-14', 'Feminino', "71987415236", "lariprincess2@gmail.com", "Unimed"),
-("Grace", "George Santos", "Mussuranga", 3500.00, "Auxiliar de Gerente", '2021-02-20', '1995-03-09', 'Masculino', '71987452145', "gracinhapoderosa@outlook.com", "Hapvida"),
-("Paty", "Patrícia Lima", "Brotas", 5000.00, "Gerente", '2020-05-15', '1992-08-14', 'Feminino', "71974165823", "patinha2010@gmail.com", "Promédica");
+("Grace", "George Santos", "Mussuranga", 3500.00, "Veterinario", '2021-02-20', '1995-03-09', 'Masculino', '71987452145', "gracinhapoderosa@outlook.com", "Hapvida"),
+("Paty", "Patrícia Lima", "Brotas", 5000.00, "Veterinario", '2020-05-15', '1992-08-14', 'Feminino', "71974165823", "patinha2010@gmail.com", "Promédica");
 
 # Inserção de dados cliente.
 insert into tb_cliente (nome_social_cliente, nome_cliente, email_cliente, endereco_cliente, dt_nasc_cliente, genero_cliente, contato_cliente) values
@@ -162,6 +160,11 @@ insert into tb_produto (cod_produto, nome_produto, valor_custo, valor_venda, mar
 (4, "Perfume", 120.00, 20, "DuraPets", "Higiente", '2019-06-12', '2030-05-20', 20, 30, "53443421154511"),
 (5, "Coleira", 60.00, 20, "Clube Pet D&G", "Passeio", '2020-08-10', '2025-05-17', 10, 20, "98839923405422");
 
+# Inserção de dados itens venda
+insert into tb_itens_venda (qtd_vendida, cod_produto) values
+(5, 1),
+(10, 2),
+(3, 3);
 
 # Selects para verificação das criações das tabelas.
 select * from tb_funcionario;
@@ -224,7 +227,37 @@ group by plano_saude having count(*) > 0 order by total desc;
 
 # Inner Joins
 
-# Inner join para relacionar os Clientes com seus animais.
+# Inner Join para relacionar os Clientes com seus animais.
 select tb_cliente.nome_cliente, tb_animal.nome_animal
 from tb_cliente
 inner join tb_animal on tb_cliente.id_cliente = tb_animal.id_cliente;
+
+# Inner Join para relacionar os Fornecedores com os produtos fornecidos.
+select tb_fornecedor.nome_fantasia, tb_fornecedor.contato_fornec, tb_produto.nome_produto, tb_produto.valor_custo
+from tb_fornecedor
+inner join tb_produto on tb_fornecedor.cnpj_fornec = tb_produto.cnpj_fornec;
+
+# Left Inner Join para relacionar os serviços com os funcionários que o fizeram.
+select nome_servico, tipo_servico, valor_servico, DtHrServico, nome_func
+from tb_servico left join tb_funcionario
+on tb_servico.id_func = tb_funcionario.id_func;
+
+# Trigger para controle de estoque.
+DELIMITER $
+create trigger Tgr_ItensVenda_Insert after insert
+on tb_itens_venda
+for each row
+begin
+	update tb_produto set qtd_estocada = qtd_estocada - new.qtd_vendida
+where cod_produto = new.cod_produto;
+end$
+
+create trigger Tgr_ItensVenda_Delete after delete
+on tb_itens_venda
+for each row
+begin
+	update tb_produto set qtd_estocada = qtd_estocada + old.qtd_vendida
+where cod_produto = old.cod_produto;
+end$
+
+DELIMITER ;
