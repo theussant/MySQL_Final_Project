@@ -1,2 +1,2 @@
 # MySQL_Final_Project
-Final Project
+Final Project - Petshop Database.
